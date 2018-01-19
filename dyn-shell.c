@@ -6,10 +6,17 @@
 /* Linker magic so we can be both a shared library and an executable. */
 const char service_interp[] __attribute__((section(".interp"))) = "/lib64/ld-linux-x86-64.so.2";
 
+__attribute__((visibility("default")))
 void
-callback (void)
+good_callback (void)
 {
-        fprintf (stderr, "Welcome back, world.\n");
+        printf ("Welcome back, world.\n");
+}
+
+void
+bad_callback (void)
+{
+        printf ("What am I doing here?\n");
 }
 
 int
@@ -18,7 +25,7 @@ main (int argc, char **argv)
         void    *plugin;
         void    (*func) (void);
 
-        plugin = dlopen ("./dyn-plugin.so", RTLD_NOW | RTLD_GLOBAL);
+        plugin = dlopen ("./dyn-plugin.so", RTLD_NOW | RTLD_LOCAL);
         if (!plugin) {
                 fprintf (stderr, "load failed (%s)\n", dlerror());
                 return EXIT_FAILURE;
@@ -33,5 +40,11 @@ main (int argc, char **argv)
 
         func ();
 
-        exit (EXIT_SUCCESS);
+        return EXIT_SUCCESS;
+}
+
+int
+entry (int argc, char **argv)
+{
+        exit (main (argc, argv));
 }
