@@ -1,0 +1,19 @@
+This was inspired by a problem we faced in Gluster. How do we have one of our
+daemon executables dynamically load a translator, such that the translator could
+link back to *some* symbols in the executable without having visibility to
+*all*? The obvious solution is to split the executable into a shared library to
+which both the executable and the translator link ... but that doesn't quite
+work. We need many symbols to be visible to the executable but not the
+translator, and such selective visibility is just not a thing to the folks who
+write linkers. So this solution involves two parts.
+
+(1) Make an executable shared library. The translator can link against this
+shared library just like any other, but you can also execute it directly. This
+is what the weird service_interp stuff in dyn-shell.c is about, along with the
+"entry" function both there and in the makefile.
+
+(2) Use -fvisibility and __attribute__((visibility)) to control what symbols
+become visible *outside* of the library/executable (i.e. to the translator).
+Everything is still visible *inside* the executable regardless, which is what we
+want. It's worth reading the -fvisibility section of the ld man page for some
+more background.
