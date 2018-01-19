@@ -5,7 +5,13 @@ link back to *some* symbols in the executable without having visibility to
 which both the executable and the translator link ... but that doesn't quite
 work. We need many symbols to be visible to the executable but not the
 translator, and such selective visibility is just not a thing to the folks who
-write linkers. So this solution involves two parts.
+write linkers. Alternatively, we could split *just* those pieces that
+translators need to call into a separate shared library, but the dependencies
+were a bit too complicated for that to be easy.
+
+Either of these solutions would be fine and probably preferred in the situations
+where they're applicable, but sometimes - only sometimes! - a bit of magic can
+be preferable to a lot of refactoring. This solution involves two parts.
 
 (1) Make an executable shared library. The translator can link against this
 shared library just like any other, but you can also execute it directly. This
